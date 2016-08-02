@@ -1,4 +1,4 @@
-/* nvd3 version 1.8.4-dev (https://github.com/novus/nvd3) 2016-07-03 */
+/* nvd3 version 1.8.4-dev (https://github.com/novus/nvd3) 2016-08-02 */
 (function(){
 
 // set up main nv object
@@ -11164,6 +11164,7 @@ nv.models.pie = function() {
         , color = nv.utils.defaultColor()
         , valueFormat = d3.format(',.2f')
         , showLabels = true
+        , multiLineLabels = false
         , labelsOutside = false
         , labelType = "key"
         , labelThreshold = .02 //if slice percentage is under this, don't show label
@@ -11190,6 +11191,12 @@ nv.models.pie = function() {
     //------------------------------------------------------------
 
     var renderWatch = nv.utils.renderWatch(dispatch);
+
+    var labelLines = 0;
+
+    var initLabelLines = function(label) {
+        labelLines = label.split('\n').length;
+    };
 
     function chart(selection) {
         renderWatch.reset();
@@ -11408,9 +11415,27 @@ nv.models.pie = function() {
                         .attr("rx", 3)
                         .attr("ry", 3);
 
-                    group.append('text')
-                        .style('text-anchor', labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle') //center the text on it's origin or begin/end if orthogonal aligned
-                        .style('fill', '#000')
+                    if (multiLineLabels && typeof labelType === 'function') {
+                        if (labelLines) {
+                            for (var i = labelLines.lines.length - 1; i >= 0; i--) {
+                                group.append('text')
+                                    .attr('class', 'line-' + i)
+                                    .attr('dy', i + 'em')
+                                    .style('text-anchor', labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle') //center the text on it's origin or begin/end if orthogonal aligned
+                                    .style('fill', '#000')
+                            }
+                        } else {
+                            initLabelLines(labelType(d, i, {
+                                'key': getX(d.data),
+                                'value': getY(d.data),
+                                'percent': valueFormat(percent)
+                            }));
+                        }
+                    } else {
+                        group.append('text')
+                            .style('text-anchor', labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle') //center the text on it's origin or begin/end if orthogonal aligned
+                            .style('fill', '#000');
+                    }
                 });
 
                 var labelLocationHash = {};
@@ -11456,38 +11481,64 @@ nv.models.pie = function() {
                     }
                 });
 
-                pieLabels.select(".nv-label text")
-                    .style('text-anchor', function(d,i) {
-                        //center the text on it's origin or begin/end if orthogonal aligned
-                        return labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle';
-                    })
-                    .text(function(d, i) {
-                        var percent = getSlicePercentage(d);
-                        var label = '';
-                        if (!d.value || percent < labelThreshold) return '';
+                if (multiLineLabels) {
+                    for (var j = labelLines.lines.length - 1; j >= 0; j--) {
+                        pieLabels.select(".nv-label .line-" + j)
+                            .style('text-anchor', function(d,i) {
+                                //center the text on it's origin or begin/end if orthogonal aligned
+                                return labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle';
+                            })
+                            .text(function(d, i) {
+                                var percent = getSlicePercentage(d);
+                                var label = '';
+                                if (!d.value || percent < labelThreshold) return '';
 
-                        if(typeof labelType === 'function') {
-                            label = labelType(d, i, {
-                                'key': getX(d.data),
-                                'value': getY(d.data),
-                                'percent': valueFormat(percent)
-                            });
-                        } else {
-                            switch (labelType) {
-                                case 'key':
-                                    label = getX(d.data);
-                                    break;
-                                case 'value':
-                                    label = valueFormat(getY(d.data));
-                                    break;
-                                case 'percent':
-                                    label = d3.format('%')(percent);
-                                    break;
+                                label = labelType(d, i, {
+                                    'key': getX(d.data),
+                                    'value': getY(d.data),
+                                    'percent': valueFormat(percent)
+                                });
+                               
+                                return label.split('\n')[j];
+                            })
+                        ;
+                    }
+                } else {
+                    pieLabels.select(".nv-label text")
+                        .style('text-anchor', function(d,i) {
+                            //center the text on it's origin or begin/end if orthogonal aligned
+                            return labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle';
+                        })
+                        .text(function(d, i) {
+                            var percent = getSlicePercentage(d);
+                            var label = '';
+                            if (!d.value || percent < labelThreshold) return '';
+
+                            if(typeof labelType === 'function') {
+                                label = labelType(d, i, {
+                                    'key': getX(d.data),
+                                    'value': getY(d.data),
+                                    'percent': valueFormat(percent)
+                                });
+                            } else {
+                                switch (labelType) {
+                                    case 'key':
+                                        label = getX(d.data);
+                                        break;
+                                    case 'value':
+                                        label = valueFormat(getY(d.data));
+                                        break;
+                                    case 'percent':
+                                        label = d3.format('%')(percent);
+                                        break;
+                                }
                             }
-                        }
-                        return label;
-                    })
-                ;
+                            return label;
+                        })
+                    ;
+                }
+
+                
             }
 
 
@@ -11526,6 +11577,7 @@ nv.models.pie = function() {
         width:      {get: function(){return width;}, set: function(_){width=_;}},
         height:     {get: function(){return height;}, set: function(_){height=_;}},
         showLabels: {get: function(){return showLabels;}, set: function(_){showLabels=_;}},
+        multiLineLabels: {get: function(){return multiLineLabels;}, set: function(_){multiLineLabels=_;}},
         title:      {get: function(){return title;}, set: function(_){title=_;}},
         titleOffset:    {get: function(){return titleOffset;}, set: function(_){titleOffset=_;}},
         labelThreshold: {get: function(){return labelThreshold;}, set: function(_){labelThreshold=_;}},
