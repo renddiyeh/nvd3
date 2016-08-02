@@ -277,9 +277,9 @@ nv.models.pie = function() {
                             }
                         } else {
                             initLabelLines(labelType(d, i, {
-                                'key': getX(d.data),
-                                'value': getY(d.data),
-                                'percent': valueFormat(percent)
+                                'key': '',
+                                'value': '',
+                                'percent': ''
                             }));
                         }
                     } else {
@@ -333,8 +333,6 @@ nv.models.pie = function() {
                 });
 
                 if (multiLineLabels && typeof labelType === 'function') {
-                    console.log(multiLineLabels);
-                    console.log(labelLines);
                     for (var j = labelLines - 1; j >= 0; j--) {
                         pieLabels.select(".nv-label .line-" + j)
                             .style('text-anchor', function(d,i) {
