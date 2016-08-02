@@ -281,7 +281,6 @@ nv.models.pie = function() {
                                 'value': getY(d.data),
                                 'percent': valueFormat(percent)
                             }));
-                            console.log(multiLineLabels, labelLines);
                         }
                     } else {
                         group.append('text')
@@ -334,6 +333,8 @@ nv.models.pie = function() {
                 });
 
                 if (multiLineLabels && typeof labelType === 'function') {
+                    console.log(multiLineLabels);
+                    console.log(labelLines);
                     for (var j = labelLines - 1; j >= 0; j--) {
                         pieLabels.select(".nv-label .line-" + j)
                             .style('text-anchor', function(d,i) {
