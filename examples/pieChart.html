@@ -60,7 +60,9 @@
             .y(function(d) { return d.y })
             .width(width)
             .height(height)
-            .showTooltipPercent(true);
+            .showTooltipPercent(true)
+            .multiLineLabels(true)
+            .labelType(function(d) { return '1\n2\n3'; });
 
         d3.select("#test1")
             .datum(testdata2)

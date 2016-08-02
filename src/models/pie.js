@@ -268,7 +268,7 @@ nv.models.pie = function() {
 
                     if (multiLineLabels && typeof labelType === 'function') {
                         if (labelLines) {
-                            for (var i = labelLines.lines.length - 1; i >= 0; i--) {
+                            for (var i = labelLines - 1; i >= 0; i--) {
                                 group.append('text')
                                     .attr('class', 'line-' + i)
                                     .attr('dy', i + 'em')
@@ -281,6 +281,7 @@ nv.models.pie = function() {
                                 'value': getY(d.data),
                                 'percent': valueFormat(percent)
                             }));
+                            console.log(multiLineLabels, labelLines);
                         }
                     } else {
                         group.append('text')
@@ -332,8 +333,8 @@ nv.models.pie = function() {
                     }
                 });
 
-                if (multiLineLabels) {
-                    for (var j = labelLines.lines.length - 1; j >= 0; j--) {
+                if (multiLineLabels && typeof labelType === 'function') {
+                    for (var j = labelLines - 1; j >= 0; j--) {
                         pieLabels.select(".nv-label .line-" + j)
                             .style('text-anchor', function(d,i) {
                                 //center the text on it's origin or begin/end if orthogonal aligned
