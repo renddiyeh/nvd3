@@ -11417,19 +11417,26 @@ nv.models.pie = function() {
 
                     if (multiLineLabels && typeof labelType === 'function') {
                         if (labelLines) {
-                            for (var i = labelLines - 1; i >= 0; i--) {
+                            for (var j = labelLines - 1; j >= 0; j--) {
                                 group.append('text')
-                                    .attr('class', 'line-' + i)
-                                    .attr('dy', i + 'em')
+                                    .attr('class', 'line-' + j)
+                                    .attr('dy', j + 'em')
                                     .style('text-anchor', labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle') //center the text on it's origin or begin/end if orthogonal aligned
                                     .style('fill', '#000')
                             }
                         } else {
                             initLabelLines(labelType(d, i, {
-                                'key': '',
-                                'value': '',
-                                'percent': ''
+                                key: '',
+                                value: '',
+                                percent: ''
                             }));
+                            for (var j = labelLines - 1; j >= 0; j--) {
+                                group.append('text')
+                                    .attr('class', 'line-' + j)
+                                    .attr('dy', j + 'em')
+                                    .style('text-anchor', labelSunbeamLayout ? ((d.startAngle + d.endAngle) / 2 < Math.PI ? 'start' : 'end') : 'middle') //center the text on it's origin or begin/end if orthogonal aligned
+                                    .style('fill', '#000')
+                            }
                         }
                     } else {
                         group.append('text')
